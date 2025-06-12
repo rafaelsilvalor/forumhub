@@ -1,8 +1,8 @@
-[![Java 24](https://img.shields.io/badge/Java-24-blue.svg)](https://www.oracle.com/java/) [![Spring Boot 3](https://img.shields.io/badge/Spring%20Boot-3-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Maven](https://img.shields.io/badge/Maven-3-red.svg)](https://maven.apache.org/) [![H2 Database](https://img.shields.io/badge/H2-Database-lightgrey.svg)](https://www.h2database.com/) [![Lombok](https://img.shields.io/badge/Lombok-Enabled-orange.svg)](https://projectlombok.org/)
+[![Java 24](https://img.shields.io/badge/Java-24-blue.svg)](https://www.oracle.com/java/) [![Spring Boot 3.x](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Maven](https://img.shields.io/badge/Maven-3.x-red.svg)](https://maven.apache.org/) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://www.postgresql.org/)
 
-# 📚 Fórum Hub API
+# 📚 Literallor — Catálogo de Livros
 
-Uma API RESTful de fórum em **Java 24** + **Spring Boot 3**, que permite criar tópicos, responder discussões e gerenciar usuários. Ideal para quem quer aprender boas práticas REST, Spring Data JPA, Spring Security e desenvolvimento backend com Maven.
+Uma aplicação de terminal em **Java 24** + **Spring Boot 3.x** que consome a API [Gutendex](https://gutendex.com/) para buscar metadados de livros e persistir em um banco **PostgreSQL**. Ideal para quem quer explorar consumo de APIs REST, JPA e interatividade via console.
 
 ---
 
@@ -13,40 +13,38 @@ Uma API RESTful de fórum em **Java 24** + **Spring Boot 3**, que permite criar 
 3. [Pré-requisitos](#-pré-requisitos)
 4. [Instalação & Configuração](#-instalação--configuração)
 5. [Como Executar](#-como-executar)
-6. [Estrutura do Projeto](#-estrutura-do-projeto)
-7. [Explicação dos Pacotes](#-explicação-dos-pacotes)
-8. [Diagrama de Fluxo](#-diagrama-de-fluxo)
+6. [Uso da Aplicação](#-uso-da-aplicação)
+7. [Estrutura do Projeto](#-estrutura-do-projeto)
+8. [Diagrama de Arquitetura](#-diagrama-de-arquitetura)
 9. [Próximos Passos](#-próximos-passos)
 
 ---
 
 ## 🔍 Visão Geral
 
-* **Objetivo**: Plataforma de fórum backend, onde usuários podem criar tópicos e interagir via respostas.
-* **Arquitetura**: API RESTful com Spring Boot e padrões de projeto.
-* **Persistência**: Banco em memória H2 para dev, facilmente substituível por outro SGBD.
+- **Objetivo**: Permitir buscas e gerenciamento de um catálogo de livros a partir do terminal.
+- **Fonte de Dados**: API pública gratuita [Gutendex](https://gutendex.com/books/).
+- **Persistência**: PostgreSQL via Spring Data JPA.
 
 ---
 
 ## 🛠 Tecnologias
 
-* **Java 24**
-* **Spring Boot 3**
-* **Spring Web**
-* **Spring Data JPA**
-* **Spring Security**
-* **Maven**
-* **Lombok**
-* **H2 Database**
-* **Bean Validation**
+- **Java 24**
+- **Spring Boot 3.x**
+- **Maven**
+- **Spring Data JPA**
+- **PostgreSQL**
+- **Jackson** (JSON ↔ Java)
+- **Gutendex API**
 
 ---
 
 ## ⚙️ Pré-requisitos
 
-1. JDK 24 instalado
-2. Maven 3.x
-3. (Opcional) IDE como IntelliJ ou VS Code
+1. **JDK 21**
+2. **Maven 3.x** (ou [Maven Wrapper](https://github.com/takari/maven-wrapper) incluído)
+3. **PostgreSQL** em execução
 
 ---
 
@@ -55,97 +53,132 @@ Uma API RESTful de fórum em **Java 24** + **Spring Boot 3**, que permite criar 
 1. **Clone o repositório**
 
    ```bash
-   git clone <URL_DO_REPOSITÓRIO>
-   cd forumhub
+   git clone https://github.com/seu-usuario/literallor.git
+   cd literallor
    ```
-2. **Configure variáveis** em `src/main/resources/application.properties`
+
+2. **Crie o banco de dados**
+
+   ```sql
+   CREATE DATABASE literallordb;
+   ```
+
+3. **Ajuste credenciais** em `src/main/resources/application.properties`
 
    ```properties
-   # H2 (dev)
-   spring.datasource.url=jdbc:h2:mem:forumhubdb
-   spring.datasource.driverClassName=org.h2.Driver
-   spring.datasource.username=sa
-   spring.datasource.password=
-   spring.h2.console.enabled=true
-   spring.jpa.hibernate.ddl-auto=update
+   spring.datasource.url=jdbc:postgresql://localhost:5432/literallordb
+   spring.datasource.username=SEU_USUARIO
+   spring.datasource.password=SUA_SENHA
+   spring.jpa.hibernate.ddl-auto=update   # ou 'validate' em produção
+   spring.jpa.show-sql=true
    ```
-3. **(Opcional) Altere para outro banco** se necessário.
+
+---
+
+## 🏦 Configuração de Banco de Dados e Ambientes (Profiles)
+
+O projeto é configurado para operar em dois ambientes distintos utilizando **Spring Profiles**, garantindo flexibilidade entre desenvolvimento e produção. A troca de ambiente é feita sem nenhuma alteração no código-fonte.
+
+* ### **Ambiente de Desenvolvimento: `dev` (Padrão)**
+   * **Banco de Dados:** **H2 Database** em memória.
+   * **Comportamento:** O banco é criado no início da execução e destruído ao final. Ideal para desenvolvimento e testes ágeis, pois não requer instalação ou configuração externa.
+   * **Console H2:** Para visualizar e gerenciar o banco de dados em tempo real, acesse `http://localhost:8080/h2-console` no seu navegador após iniciar a aplicação.
+
+* ### **Ambiente de Produção: `prod`**
+   * **Banco de Dados:** **MySQL**.
+   * **Comportamento:** Conecta-se a um banco de dados persistente, garantindo que os dados sejam mantidos entre as reinicializações da aplicação.
+   * **Ação Necessária:** Antes de ativar este profile, é necessário ter uma instância do MySQL ativa e configurar as credenciais de acesso (URL do banco, usuário e senha) no arquivo `src/main/resources/application-prod.properties`.
 
 ---
 
 ## ▶️ Como Executar
 
-```bash
-./mvnw clean install
-./mvnw spring-boot:run
-```
+1. No terminal, compile e execute:
 
-A API ficará disponível em `http://localhost:8080`.
+   ```bash
+   ./mvnw clean install
+   ./mvnw spring-boot:run
+   ```
+
+2. A aplicação iniciará e apresentará o prompt de comandos no console.
+
+---
+
+## 💻 Uso da Aplicação
+
+A seguir, exemplos de opções de menu no terminal (a implementar):
+
+```
+1. Buscar livro por título
+2. Listar todos os livros cadastrados
+3. Buscar livro por autor
+4. Listar autores vivos em ano específico
+5. Listar livros por idioma
+0. Sair
+```
 
 ---
 
 ## 📂 Estrutura do Projeto
 
 ```
-forumhub/
+.
 ├── src/
 │   ├── main/
-│   │   ├── java/com/example/forumhub/
-│   │   │   ├── config/          # Configurações (Segurança, CORS)
-│   │   │   ├── controller/      # Endpoints REST
-│   │   │   ├── dto/             # Data Transfer Objects
-│   │   │   ├── model/           # Entidades JPA
-│   │   │   ├── repository/      # Repositórios Spring Data
-│   │   │   └── service/         # Lógica de negócio
-│   │   │   └── ForumhubApplication.java
+│   │   ├── java/com/example/literallor/
+│   │   │   ├── LiterallorApplication.java      # Ponto de entrada do Spring Boot
+│   │   │   ├── MainApplication.java          # Lógica principal e menu interativo
+│   │   │   ├── entity/                       # Entidades JPA (tabelas do banco)
+│   │   │   │   ├── Author.java
+│   │   │   │   └── Book.java
+│   │   │   ├── model/                        # DTOs para desserialização da API
+│   │   │   │   ├── AuthorDTO.java
+│   │   │   │   ├── BookDTO.java
+│   │   │   │   └── GutendexResponseDTO.java
+│   │   │   ├── repository/                   # Repositórios Spring Data JPA
+│   │   │   │   ├── AuthorRepository.java
+│   │   │   │   └── BookRepository.java
+│   │   │   └── service/                      # Serviços da aplicação
+│   │   │       └── GutendexService.java
 │   │   └── resources/
-│   │       └── application.properties
-│   └── test/java/com/example/forumhub/
-└── pom.xml
+│   │       └── application.properties        # Configurações da aplicação
+│   └── test/
+│       └── java/com/example/literallor/
+│           └── LiterallorApplicationTests.java
+├── pom.xml                                     # Build & dependências
+└── README.md                                   # Este arquivo
+
 ```
 
 ---
 
-## 📖 Explicação dos Pacotes
-
-* **config**: Classes de configuração (ex.: Spring Security).
-* **controller**: Recebe HTTP e delega à camada de serviço.
-* **dto**: Objetos para requests/responses, isolando a model.
-* **model**: Entidades JPA, representam tabelas do BD.
-* **repository**: Interfaces estendendo `JpaRepository`.
-* **service**: Regras de negócio e orquestração de repositórios.
-
----
-
-## 🔄 Diagrama de Fluxo
+## 🏛 Diagrama de Arquitetura
 
 ```mermaid
-sequenceDiagram
-    participant U as Usuário
-    participant C as Controller
-    participant S as Service
-    participant R as Repository
-    participant D as Banco de Dados
+flowchart TD;
+    A[Usuário via Terminal] -->|1: Interage via CLI| B(Spring Boot Application);
+    B -->|2: Busca livro| C[API Gutendex];
+    C -->|3: Retorna JSON| B;
+    B -->|4: Deserializa com Jackson| D[Objetos DTO];
+    D -->|5: Mapeia para Entidades| E[Entidades JPA];
+    E -->|6: Salva/Busca com JPA| F[Banco de Dados PostgreSQL];
+    F -->|7: Retorna dados persistidos| B;
+    B -->|8: Exibe resultados| A; 
 
-    U->>+C: POST /topicos
-    C->>+S: criarTopico(dto)
-    S->>+R: save(entidade)
-    R-->>-S: retorna entidade com ID
-    S-->>-C: retorna DTO criado
-    C-->>-U: 201 Created (JSON)
 ```
 
 ---
 
-## 🚧 Próximos Passos
+## 💡 Próximos Passos e Desafios Futuros
 
-* Definir entidade **Tópico** e seu **DTO**.
-* Implementar testes unitários com JUnit.
-* Adicionar autenticação JWT via Spring Security.
-* Persistir em banco relacional (PostgreSQL ou MySQL).
+- [ ] **Gerar Estatísticas:** Utilizar a classe `DoubleSummaryStatistics` para calcular e exibir dados estatísticos sobre os livros cadastrados (ex: média, máximo e mínimo de downloads).
+- [ ] **Top 10 Livros:** Criar uma opção no menu para exibir os 10 livros mais baixados, consultando diretamente o banco de dados.
+- [ ] **Buscar Autor por Nome:** Implementar uma busca de autor por nome, consultando o banco de dados local em vez da API.
+- [ ] **Consultas Avançadas de Autores:** Expandir as buscas de autores com novas opções, como listar autores por intervalo de ano de nascimento ou falecimento.
+
 
 ---
 
 <p align="center">
-  <em>Desenvolvido com ♥ por Rafael Gomes Silva</em>
+  <em>Desenvolvido por Rafael Gomes Silva</em>
 </p>
