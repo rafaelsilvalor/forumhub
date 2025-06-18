@@ -14,8 +14,8 @@ public class TopicCreateDto {
     @Size(min = 10, max = 500, message = "Message must be between 10 and 500 characters")
     private String message;
 
-    @NotBlank(message = "Author cannot be blank")
-    private String author;
+    // Removed: @NotBlank(message = "Author cannot be blank")
+    // Removed: private String author;
 
     @NotBlank(message = "Course cannot be blank")
     private String course;
