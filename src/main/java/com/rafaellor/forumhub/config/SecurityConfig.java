@@ -1,5 +1,7 @@
+// src/main/java/com/rafaellor/forumhub/config/SecurityConfig.java
 package com.rafaellor.forumhub.config;
 
+import org.springframework.beans.factory.annotation.Autowired; // Add this import
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,32 +12,36 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // Add this import
 
 @Configuration
-@EnableWebSecurity // Enables Spring Security's web security support
+@EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean // Defines the security filter chain
+    @Autowired // Inject the SecurityFilter
+    private SecurityFilter securityFilter;
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable()) // Disable CSRF as JWT is stateless
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Make sessions stateless
+        return http.csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
-                    // Public endpoints (e.g., login, H2 console for dev profile)
                     req.requestMatchers("/login").permitAll();
-                    req.requestMatchers("/h2-console/**").permitAll(); // Allow H2 console access in dev
-                    // All other requests require authentication
+                    req.requestMatchers("/h2-console/**").permitAll();
                     req.anyRequest().authenticated();
                 })
-                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())) // Required for H2 console
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+                // Add the custom filter BEFORE Spring's default UsernamePasswordAuthenticationFilter
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
-    @Bean // Provides the AuthenticationManager
+    @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
-    @Bean // Provides the password encoder (BCrypt)
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
