@@ -16,6 +16,6 @@ public class PasswordEncoderUtil {
 
         // Print the hashed password to the console
         System.out.println("Plaintext Password: " + plaintextPassword);
-        System.out.println("Hashed Password (for V2__create_users_table.sql): " + hashedPassword);
+        System.out.println("Hashed Password (for V1__create_initial_schema.sql): " + hashedPassword);
     }
 }

@@ -26,8 +26,8 @@ public class Topic {
     private Boolean status; // true for active, false for closed
 
     // Changed from String to ManyToOne relationship with User
-    @ManyToOne(fetch = FetchType.LAZY) // Many topics to one user
-    @JoinColumn(name = "user_id", nullable = false) // Foreign key column name, not nullable
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false) // Change "user_id" to "author_id"
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
