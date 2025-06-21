@@ -26,12 +26,12 @@ public class SecurityConfig {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
-                    req.requestMatchers("/login").permitAll();
+                    // This line allows public access to login and register endpoints
+                    req.requestMatchers("/login", "/register").permitAll();
                     req.requestMatchers("/h2-console/**").permitAll();
                     req.anyRequest().authenticated();
                 })
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-                // Add the custom filter BEFORE Spring's default UsernamePasswordAuthenticationFilter
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -45,4 +45,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }
