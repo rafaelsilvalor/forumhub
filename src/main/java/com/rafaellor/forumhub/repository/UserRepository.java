@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Long> {
     // Spring Security will use this method to find a user by username
     User findByUsername(String username);
+    // Add this method to allow finding a user by email
+    User findByEmail(String email);
 }
