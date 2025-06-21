@@ -2,7 +2,7 @@ package com.rafaellor.forumhub.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rafaellor.forumhub.dto.TopicCreateDto;
-import com.rafaellor.forumhub.model.Curso;
+import com.rafaellor.forumhub.model.Course;
 import com.rafaellor.forumhub.model.Topic;
 import com.rafaellor.forumhub.model.User;
 import com.rafaellor.forumhub.repository.CursoRepository;
@@ -69,17 +69,17 @@ class TopicControllerTest {
         TopicCreateDto createDto = new TopicCreateDto();
         createDto.setTitle("New Test Title");
         createDto.setMessage("New Test Message for controller");
-        createDto.setCursoId(1L);
+        createDto.setCourseId(1L);
 
         User mockUser = new User(1L, "testuser", "password");
-        Curso mockCurso = new Curso(1L, "Spring Boot", "Backend");
-        Topic savedTopic = new Topic("New Test Title", "New Test Message for controller", mockUser, mockCurso);
+        Course mockCourse = new Course(1L, "Spring Boot", "Backend");
+        Topic savedTopic = new Topic("New Test Title", "New Test Message for controller", mockUser, mockCourse);
         savedTopic.setId(10L);
 
         // Configurar mocks (agora usando os beans injetados)
         when(topicRepository.existsByTitle(anyString())).thenReturn(false);
         when(topicRepository.existsByMessage(anyString())).thenReturn(false);
-        when(cursoRepository.findById(1L)).thenReturn(Optional.of(mockCurso));
+        when(cursoRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
         when(topicRepository.save(any(Topic.class))).thenReturn(savedTopic);
 
         // Ação e Verificação
@@ -92,7 +92,7 @@ class TopicControllerTest {
                 .andExpect(jsonPath("$.id").value(savedTopic.getId()))
                 .andExpect(jsonPath("$.title").value(createDto.getTitle()))
                 .andExpect(jsonPath("$.authorUsername").value(mockUser.getUsername()))
-                .andExpect(jsonPath("$.courseName").value(mockCurso.getNome()));
+                .andExpect(jsonPath("$.courseName").value(mockCourse.getName()));
 
         verify(cursoRepository, times(1)).findById(1L);
         verify(topicRepository, times(1)).save(any(Topic.class));
@@ -107,7 +107,7 @@ class TopicControllerTest {
         TopicCreateDto createDto = new TopicCreateDto();
         createDto.setTitle("Existing Title");
         createDto.setMessage("Unique Message");
-        createDto.setCursoId(1L);
+        createDto.setCourseId(1L);
 
         when(topicRepository.existsByTitle("Existing Title")).thenReturn(true);
 
@@ -124,8 +124,8 @@ class TopicControllerTest {
     @WithMockUser
     void getAllTopicsScenario() throws Exception {
         User mockAuthor = new User(1L, "author1", "pass");
-        Curso mockCurso = new Curso(1L, "Java", "Programming");
-        Topic topic1 = new Topic(10L, "Title 1", "Message 1", LocalDateTime.now(), true, mockAuthor, mockCurso);
+        Course mockCourse = new Course(1L, "Java", "Programming");
+        Topic topic1 = new Topic(10L, "Title 1", "Message 1", LocalDateTime.now(), true, mockAuthor, mockCourse);
 
         when(topicRepository.findAll()).thenReturn(List.of(topic1));
 
@@ -142,8 +142,8 @@ class TopicControllerTest {
     void getTopicByIdScenario1() throws Exception {
         Long topicId = 1L;
         User mockAuthor = new User(10L, "singleuser", "pass");
-        Curso mockCurso = new Curso(5L, "DevOps", "CI/CD");
-        Topic topic = new Topic(topicId, "Single Topic", "Details", LocalDateTime.now(), true, mockAuthor, mockCurso);
+        Course mockCourse = new Course(5L, "DevOps", "CI/CD");
+        Topic topic = new Topic(topicId, "Single Topic", "Details", LocalDateTime.now(), true, mockAuthor, mockCourse);
 
         when(topicRepository.findById(topicId)).thenReturn(Optional.of(topic));
 

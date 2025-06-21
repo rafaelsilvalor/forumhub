@@ -16,5 +16,5 @@ public class TopicCreateDto {
     private String message;
 
     @NotNull(message = "Course ID cannot be null")
-    private Long cursoId; // Mudar de 'String course' para 'Long cursoId'
+    private Long courseId; // Mudar de 'String course' para 'Long courseId'
 }

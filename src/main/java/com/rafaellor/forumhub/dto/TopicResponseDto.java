@@ -16,9 +16,9 @@ public class TopicResponseDto {
     private LocalDateTime creationDate;
     private Boolean status;
     private String authorUsername;
-    private String courseName; // Mudar de 'String course' para 'String courseName'
+    private String courseName;
 
-    // Construtor para converter Topic em DTO
+    // Constructor to convert Topic entity to DTO
     public TopicResponseDto(Topic topic) {
         this.id = topic.getId();
         this.title = topic.getTitle();
@@ -26,7 +26,8 @@ public class TopicResponseDto {
         this.creationDate = topic.getCreationDate();
         this.status = topic.getStatus();
         this.authorUsername = topic.getAuthor() != null ? topic.getAuthor().getUsername() : null;
-        // Acessar o nome do curso a partir do objeto Curso associado
-        this.courseName = topic.getCurso() != null ? topic.getCurso().getNome() : null;
+        // CORRECTED LINE:
+        // Access the name from the associated Course object using .getName()
+        this.courseName = topic.getCourse() != null ? topic.getCourse().getName() : null;
     }
 }

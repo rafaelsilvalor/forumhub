@@ -1,6 +1,6 @@
 package com.rafaellor.forumhub.repository;
 
-import com.rafaellor.forumhub.model.Curso;
+import com.rafaellor.forumhub.model.Course;
 import com.rafaellor.forumhub.model.Topic;
 import com.rafaellor.forumhub.model.User;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +29,7 @@ class TopicRepositoryTest {
         // Arrange: Preparação
         User author = new User(null, "author.test", "123456");
         em.persist(author);
-        Curso course = new Curso(null, "JPA", "Backend");
+        Course course = new Course(null, "JPA", "Backend");
         em.persist(course);
         Topic topic = new Topic("Título Único", "Mensagem de teste", author, course);
         em.persist(topic);
@@ -57,7 +57,7 @@ class TopicRepositoryTest {
         // Arrange
         User author = new User(null, "author.test2", "123456");
         em.persist(author);
-        Curso course = new Curso(null, "Spring Test", "Testes");
+        Course course = new Course(null, "Spring Test", "Testes");
         em.persist(course);
         Topic topic = new Topic("Outro Título", "Mensagem Única", author, course);
         em.persist(topic);
@@ -85,7 +85,7 @@ class TopicRepositoryTest {
         // Arrange
         User author = new User(null, "author.save", "123456");
         em.persist(author);
-        Curso course = new Curso(null, "Hibernate", "Backend");
+        Course course = new Course(null, "Hibernate", "Backend");
         em.persist(course);
         Topic newTopic = new Topic("Tópico para Salvar", "Mensagem para salvar", author, course);
 
@@ -97,7 +97,7 @@ class TopicRepositoryTest {
         assertThat(savedTopic.getId()).isNotNull();
         assertThat(savedTopic.getTitle()).isEqualTo("Tópico para Salvar");
         assertThat(savedTopic.getAuthor().getUsername()).isEqualTo("author.save");
-        assertThat(savedTopic.getCurso().getNome()).isEqualTo("Hibernate");
+        assertThat(savedTopic.getCourse().getNome()).isEqualTo("Hibernate");
     }
 
     @Test
@@ -106,7 +106,7 @@ class TopicRepositoryTest {
         // Arrange
         User author = new User(null, "author.delete", "123456");
         em.persist(author);
-        Curso course = new Curso(null, "Mockito", "Testes");
+        Course course = new Course(null, "Mockito", "Testes");
         em.persist(course);
         Topic topic = new Topic("Tópico para Deletar", "Mensagem a ser deletada", author, course);
         Topic persistedTopic = em.persistFlushFind(topic);

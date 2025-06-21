@@ -6,18 +6,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "cursos")
-@Data
+@Table(name = "courses")
+@Data // This annotation is crucial
 @NoArgsConstructor
 @AllArgsConstructor
-public class Curso {
+public class Course {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String nome;
+    private String name;
 
-    private String categoria;
+    private String category;
 }

@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class TopicTest {
 
     private User author;
-    private Curso course;
+    private Course course;
 
     @BeforeEach
     void setUp() {
         // Criar objetos mock para serem usados nos testes
         author = new User(1L, "testuser", "password");
-        course = new Curso(1L, "Test Course", "Testing");
+        course = new Course(1L, "Test Course", "Testing");
     }
 
     @Test
@@ -33,7 +33,7 @@ class TopicTest {
         assertEquals(title, topic.getTitle());
         assertEquals(message, topic.getMessage());
         assertEquals(author, topic.getAuthor(), "O autor deve ser o objeto User fornecido");
-        assertEquals(course, topic.getCurso(), "O curso deve ser o objeto Curso fornecido");
+        assertEquals(course, topic.getCourse(), "O curso deve ser o objeto Curso fornecido");
         assertTrue(topic.getStatus(), "O status de um novo tópico deve ser 'true' (ativo)");
         assertNotNull(topic.getCreationDate(), "A data de criação não deve ser nula");
         assertTrue(topic.getCreationDate().isBefore(LocalDateTime.now().plusSeconds(1)), "A data de criação deve ser a atual");
@@ -46,14 +46,14 @@ class TopicTest {
 
         String newTitle = "New Title";
         String newMessage = "New Message";
-        Curso newCourse = new Curso(2L, "New Course", "New Category");
+        Course newCourse = new Course(2L, "New Course", "New Category");
 
         // Chamar o método de atualização com o novo objeto Curso
         topic.update(newTitle, newMessage, newCourse);
 
         assertEquals(newTitle, topic.getTitle());
         assertEquals(newMessage, topic.getMessage());
-        assertEquals(newCourse, topic.getCurso(), "O curso deve ser atualizado para o novo objeto Curso");
+        assertEquals(newCourse, topic.getCourse(), "O curso deve ser atualizado para o novo objeto Curso");
     }
 
     @Test
@@ -64,7 +64,7 @@ class TopicTest {
 
         Topic topic = new Topic(originalTitle, originalMessage, author, course);
 
-        Curso originalCourse = topic.getCurso(); // Guardar o curso original
+        Course originalCourse = topic.getCourse(); // Guardar o curso original
 
         // Tentar atualizar com valores nulos e em branco.
         // O último parâmetro (curso) é nulo.
@@ -72,7 +72,7 @@ class TopicTest {
 
         assertEquals(originalTitle, topic.getTitle(), "O título não deve mudar se o novo valor for nulo");
         assertEquals(originalMessage, topic.getMessage(), "A mensagem não deve mudar se a nova for em branco");
-        assertEquals(originalCourse, topic.getCurso(), "O curso não deve mudar se o novo valor for nulo");
+        assertEquals(originalCourse, topic.getCourse(), "O curso não deve mudar se o novo valor for nulo");
     }
 
     @Test

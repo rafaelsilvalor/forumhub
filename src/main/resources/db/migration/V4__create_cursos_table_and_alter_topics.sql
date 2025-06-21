@@ -1,23 +1,24 @@
--- Criar a tabela de cursos
-CREATE TABLE cursos (
+-- Create the courses table
+CREATE TABLE courses (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL UNIQUE,
-    categoria VARCHAR(255)
+    name VARCHAR(255) NOT NULL UNIQUE,
+    category VARCHAR(255)
 );
 
--- Adicionar a coluna de chave estrangeira na tabela de tópicos
-ALTER TABLE topics ADD COLUMN curso_id BIGINT;
+-- Add the foreign key column to the topics table
+ALTER TABLE topics ADD COLUMN course_id BIGINT;
 
--- Adicionar a restrição de chave estrangeira
+-- Add the foreign key constraint
 ALTER TABLE topics
-ADD CONSTRAINT fk_topics_curso_id
-FOREIGN KEY (curso_id) REFERENCES cursos(id);
+ADD CONSTRAINT fk_topics_course_id
+FOREIGN KEY (course_id) REFERENCES courses(id);
 
--- (Opcional) Popular com alguns cursos para teste
-INSERT INTO cursos(nome, categoria) VALUES('Spring Boot 3', 'Programação');
-INSERT INTO cursos(nome, categoria) VALUES('Java Básico', 'Programação');
+-- Optional: Populate with some courses for testing
+INSERT INTO courses(name, category) VALUES('Spring Boot 3', 'Programming');
+INSERT INTO courses(name, category) VALUES('Java Basics', 'Programming');
 
--- Remover a coluna antiga 'course' que era apenas texto
--- ATENÇÃO: Se você já tiver tópicos criados, precisaria antes migrar os dados
--- da coluna antiga para a nova antes de executar este comando.
-ALTER TABLE topics DROP COLUMN course;
+-- Remove the old 'course' column (This was done in a previous version of the script you had)
+-- Ensure this is what you want if you have existing data.
+-- The original 'course' column was removed in the file you provided earlier. We are just renaming `curso_id` to `course_id`.
+-- The column `curso_id` was added and then this one replaces it. If you ran the old one, you might need to drop `curso_id`.
+-- For simplicity, this script assumes a clean state from V3.

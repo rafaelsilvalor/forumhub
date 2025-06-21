@@ -2,7 +2,7 @@ package com.rafaellor.forumhub.controller;
 
 import com.rafaellor.forumhub.dto.TopicCreateDto;
 import com.rafaellor.forumhub.dto.TopicResponseDto;
-import com.rafaellor.forumhub.model.Curso;
+import com.rafaellor.forumhub.model.Course;
 import com.rafaellor.forumhub.model.Topic;
 import com.rafaellor.forumhub.model.User;
 import com.rafaellor.forumhub.repository.CursoRepository;
@@ -51,15 +51,14 @@ public class TopicController {
         }
 
         // Busca a entidade completa do Curso usando o ID fornecido no DTO
-        Curso curso = cursoRepository.findById(topicCreateDto.getCursoId())
-                .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + topicCreateDto.getCursoId()));
+        Course course = cursoRepository.findById(topicCreateDto.getCourseId())
+                .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + topicCreateDto.getCourseId()));
 
         // Cria o Tópico, passando o objeto User autenticado e o objeto Curso encontrado
         Topic topic = new Topic(
                 topicCreateDto.getTitle(),
                 topicCreateDto.getMessage(),
-                authenticatedUser,
-                curso // Passa a entidade Curso completa
+                authenticatedUser, course // Passa a entidade Curso completa
         );
         topic = topicRepository.save(topic);
 
@@ -100,11 +99,11 @@ public class TopicController {
                     }
 
                     // Busca o novo curso se um ID for fornecido
-                    Curso curso = cursoRepository.findById(topicUpdateDto.getCursoId())
-                            .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + topicUpdateDto.getCursoId()));
+                    Course course = cursoRepository.findById(topicUpdateDto.getCourseId())
+                            .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + topicUpdateDto.getCourseId()));
 
                     // Atualiza o tópico com os novos dados
-                    topic.update(topicUpdateDto.getTitle(), topicUpdateDto.getMessage(), curso);
+                    topic.update(topicUpdateDto.getTitle(), topicUpdateDto.getMessage(), course);
 
                     return ResponseEntity.ok(new TopicResponseDto(topic));
                 })
