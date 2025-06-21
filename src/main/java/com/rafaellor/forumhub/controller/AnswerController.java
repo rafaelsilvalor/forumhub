@@ -16,6 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import com.rafaellor.forumhub.dto.AnswerUpdateDto;
+import org.springframework.http.HttpStatus;
 
 import java.net.URI;
 
@@ -62,6 +64,47 @@ public class AnswerController {
         // }
 
         answerRepository.delete(answer);
+        return ResponseEntity.noContent().build();
+    }
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<AnswerResponseDto> updateAnswer(@PathVariable Long id, @RequestBody @Valid AnswerUpdateDto updateDto) {
+        Answer answer = answerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Answer not found with id: " + id));
+
+        // Authorization Check: Ensure the person updating is the original author
+        User authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!answer.getAuthor().equals(authenticatedUser)) {
+            // In a real app, you'd throw an AccessDeniedException handled by your ErrorHandler
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        answer.setMessage(updateDto.getMessage());
+        // The transaction will commit the change to the database
+
+        return ResponseEntity.ok(new AnswerResponseDto(answer));
+    }
+
+    @PatchMapping("/{id}/solution")
+    @Transactional
+    public ResponseEntity<Void> markAsSolution(@PathVariable Long id) {
+        Answer answer = answerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Answer not found with id: " + id));
+
+        Topic topic = answer.getTopic();
+
+        // Authorization Check: Ensure the person marking the solution is the author of the TOPIC
+        User authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!topic.getAuthor().equals(authenticatedUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // Mark this answer as the solution
+        answer.setSolution(true);
+
+        // Optionally, close the topic since it's now solved
+        topic.close();
+
         return ResponseEntity.noContent().build();
     }
 }
