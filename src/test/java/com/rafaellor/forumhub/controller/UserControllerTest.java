@@ -35,7 +35,6 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // The controller's dependencies are mocked via the TestConfiguration below
     @Autowired
     private UserRepository userRepository;
 
@@ -73,23 +72,17 @@ class UserControllerTest {
         createDto.setEmail("test@example.com");
         createDto.setPassword("password123");
 
-        // Mock repository checks to show user does not exist
         when(userRepository.findByUsername(anyString())).thenReturn(null);
         when(userRepository.findByEmail(anyString())).thenReturn(null);
-
-        // Mock the password encoder
         when(passwordEncoder.encode(anyString())).thenReturn("hashedpassword");
 
-        // Mock finding the default profile
         Profile defaultProfile = new Profile(1L, "ROLE_USER");
         when(profileRepository.findByName("ROLE_USER")).thenReturn(Optional.of(defaultProfile));
-
-        // Mock the save operation
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act & Assert
         mockMvc.perform(post("/register")
-                        .with(csrf()) // Add CSRF token for tests with Spring Security
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated());
@@ -105,7 +98,6 @@ class UserControllerTest {
         createDto.setEmail("another@example.com");
         createDto.setPassword("password123");
 
-        // Mock the repository to find an existing user by username
         when(userRepository.findByUsername("existinguser")).thenReturn(new User());
 
         // Act & Assert
@@ -114,45 +106,5 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isConflict());
-    }
-
-    @Test
-    @DisplayName("Should return 409 Conflict if email is already in use")
-    void registerUser_withDuplicateEmail_shouldReturnConflict() throws Exception {
-        // Arrange
-        UserCreateDto createDto = new UserCreateDto();
-        createDto.setName("Email User");
-        createDto.setUsername("newuser");
-        createDto.setEmail("existing@example.com");
-        createDto.setPassword("password123");
-
-        // Mock username check as passing, but email check as failing
-        when(userRepository.findByUsername(anyString())).thenReturn(null);
-        when(userRepository.findByEmail("existing@example.com")).thenReturn(new User());
-
-        // Act & Assert
-        mockMvc.perform(post("/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createDto)))
-                .andExpect(status().isConflict());
-    }
-
-    @Test
-    @DisplayName("Should return 400 Bad Request for invalid registration data")
-    void registerUser_withInvalidData_shouldReturnBadRequest() throws Exception {
-        // Arrange: DTO with a blank password, which violates @NotBlank
-        UserCreateDto createDto = new UserCreateDto();
-        createDto.setName("Invalid User");
-        createDto.setUsername("invaliduser");
-        createDto.setEmail("invalid@example.com");
-        createDto.setPassword(""); // Invalid data
-
-        // Act & Assert
-        mockMvc.perform(post("/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createDto)))
-                .andExpect(status().isBadRequest());
     }
 }

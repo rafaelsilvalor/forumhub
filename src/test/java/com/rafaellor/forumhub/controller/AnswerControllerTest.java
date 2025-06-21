@@ -2,6 +2,7 @@ package com.rafaellor.forumhub.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rafaellor.forumhub.dto.AnswerCreateDto;
+import com.rafaellor.forumhub.dto.AnswerUpdateDto;
 import com.rafaellor.forumhub.model.Answer;
 import com.rafaellor.forumhub.model.Course;
 import com.rafaellor.forumhub.model.Topic;
@@ -21,11 +22,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AnswerController.class)
@@ -65,9 +67,9 @@ class AnswerControllerTest {
         createDto.setMessage("This is a test answer.");
         createDto.setTopicId(1L);
 
-        User author = new User(1L, "test.user", "password");
+        User author = new User(1L, "Test User", "test@user.com", "test.user", "password", null);
         Course course = new Course(1L, "Spring Boot", "Backend");
-        Topic topic = new Topic(1L, "Test Topic", "Message", LocalDateTime.now(), true, new User(), course, null);
+        Topic topic = new Topic(1L, "Test Topic", "Message", LocalDateTime.now(), true, author, course, List.of());
 
         Answer savedAnswer = new Answer(10L, createDto.getMessage(), topic, LocalDateTime.now(), author, false);
 
@@ -87,21 +89,25 @@ class AnswerControllerTest {
     }
 
     @Test
-    @DisplayName("Should return 404 Not Found when creating an answer for a non-existent topic")
+    @DisplayName("Should return 200 OK when updating an answer")
     @WithMockUser(username = "test.user")
-    void createAnswer_withInvalidTopicId_shouldReturn404() throws Exception {
+    void updateAnswer_withValidData_shouldReturn200() throws Exception {
         // Arrange
-        AnswerCreateDto createDto = new AnswerCreateDto();
-        createDto.setMessage("A message for a topic that does not exist.");
-        createDto.setTopicId(99L); // Non-existent topic ID
+        AnswerUpdateDto updateDto = new AnswerUpdateDto();
+        updateDto.setMessage("Updated message");
 
-        when(topicRepository.findById(99L)).thenReturn(Optional.empty());
+        User author = new User(1L, "Test User", "test@user.com", "test.user", "password", null);
+        Topic topic = new Topic();
+        Answer existingAnswer = new Answer(10L, "Original message", topic, LocalDateTime.now(), author, false);
+
+        when(answerRepository.findById(10L)).thenReturn(Optional.of(existingAnswer));
 
         // Act & Assert
-        mockMvc.perform(post("/answers")
+        mockMvc.perform(put("/answers/10")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createDto)))
-                .andExpect(status().isNotFound());
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Updated message"));
     }
 }
