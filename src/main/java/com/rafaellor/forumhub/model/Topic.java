@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.ArrayList; // Add this import
+import java.util.List; // Add this import
+import com.rafaellor.forumhub.model.Answer; // Add this import
 
 @Entity
 @Table(name = "topics")
@@ -30,6 +33,9 @@ public class Topic {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course; // Mudar de 'String course' para 'Curso curso'
+
+    @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Answer> answers = new ArrayList<>();
 
     // private String course; // Keeping course as String for now
 
