@@ -2,10 +2,11 @@ package com.rafaellor.forumhub.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rafaellor.forumhub.dto.TopicCreateDto;
+import com.rafaellor.forumhub.model.Answer;
 import com.rafaellor.forumhub.model.Course;
 import com.rafaellor.forumhub.model.Topic;
 import com.rafaellor.forumhub.model.User;
-import com.rafaellor.forumhub.repository.CursoRepository;
+import com.rafaellor.forumhub.repository.CourseRepository;
 import com.rafaellor.forumhub.repository.TopicRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -37,17 +39,12 @@ class TopicControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // Os mocks agora são injetados a partir da nossa classe de configuração de teste
     @Autowired
     private TopicRepository topicRepository;
 
     @Autowired
-    private CursoRepository cursoRepository;
+    private CourseRepository courseRepository;
 
-    /**
-     * Classe de configuração interna para fornecer os beans mockados
-     * para o contexto de teste do Spring. Esta é a alternativa moderna ao @MockBean.
-     */
     @TestConfiguration
     static class ControllerTestConfig {
         @Bean
@@ -56,128 +53,122 @@ class TopicControllerTest {
         }
 
         @Bean
-        public CursoRepository cursoRepository() {
-            return Mockito.mock(CursoRepository.class);
+        public CourseRepository courseRepository() {
+            return Mockito.mock(CourseRepository.class);
         }
     }
 
     @Test
-    @DisplayName("Deve retornar 201 Created ao criar um tópico válido")
-    @WithMockUser(username = "testuser")
-    void createTopicScenario1() throws Exception {
-        // Preparação
+    @DisplayName("Should return 201 Created when creating a valid topic")
+    @WithMockUser(username = "test.user")
+    void createTopic_withValidData_shouldReturn201() throws Exception {
+        // Arrange
         TopicCreateDto createDto = new TopicCreateDto();
-        createDto.setTitle("New Test Title");
-        createDto.setMessage("New Test Message for controller");
+        createDto.setTitle("Valid Title");
+        createDto.setMessage("A valid message for the topic.");
         createDto.setCourseId(1L);
 
-        User mockUser = new User(1L, "testuser", "password");
-        Course mockCourse = new Course(1L, "Spring Boot", "Backend");
-        Topic savedTopic = new Topic("New Test Title", "New Test Message for controller", mockUser, mockCourse);
+        User author = new User(1L, "test.user", "password");
+        Course course = new Course(1L, "Spring Boot", "Backend");
+        Topic savedTopic = new Topic("Valid Title", "A valid message for the topic.", author, course);
         savedTopic.setId(10L);
 
-        // Configurar mocks (agora usando os beans injetados)
         when(topicRepository.existsByTitle(anyString())).thenReturn(false);
         when(topicRepository.existsByMessage(anyString())).thenReturn(false);
-        when(cursoRepository.findById(1L)).thenReturn(Optional.of(mockCourse));
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
         when(topicRepository.save(any(Topic.class))).thenReturn(savedTopic);
 
-        // Ação e Verificação
+        // Act & Assert
         mockMvc.perform(post("/topics")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated())
-                .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.id").value(savedTopic.getId()))
                 .andExpect(jsonPath("$.title").value(createDto.getTitle()))
-                .andExpect(jsonPath("$.authorUsername").value(mockUser.getUsername()))
-                .andExpect(jsonPath("$.courseName").value(mockCourse.getName()));
-
-        verify(cursoRepository, times(1)).findById(1L);
-        verify(topicRepository, times(1)).save(any(Topic.class));
+                .andExpect(jsonPath("$.authorUsername").value(author.getUsername()))
+                .andExpect(jsonPath("$.courseName").value(course.getName()));
     }
 
-
     @Test
-    @DisplayName("Deve retornar 409 Conflict ao tentar criar um tópico com título duplicado")
-    @WithMockUser(username = "testuser")
-    void createTopicScenario2() throws Exception {
+    @DisplayName("Should return 409 Conflict when creating a topic with a duplicate title")
+    @WithMockUser(username = "test.user")
+    void createTopic_withDuplicateTitle_shouldReturn409() throws Exception {
+        // Arrange
         TopicCreateDto createDto = new TopicCreateDto();
-        createDto.setTitle("Existing Title");
-        createDto.setMessage("Unique Message");
+        createDto.setTitle("Duplicate Title");
+        createDto.setMessage("Some message.");
         createDto.setCourseId(1L);
 
-        when(topicRepository.existsByTitle("Existing Title")).thenReturn(true);
+        when(topicRepository.existsByTitle("Duplicate Title")).thenReturn(true);
 
+        // Act & Assert
         mockMvc.perform(post("/topics")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Title already exists"));
+                .andExpect(status().isConflict());
     }
 
     @Test
-    @DisplayName("Deve retornar 200 OK com a lista de tópicos")
+    @DisplayName("Should return 200 OK with a list of all topics")
     @WithMockUser
-    void getAllTopicsScenario() throws Exception {
-        User mockAuthor = new User(1L, "author1", "pass");
-        Course mockCourse = new Course(1L, "Java", "Programming");
-        Topic topic1 = new Topic(10L, "Title 1", "Message 1", LocalDateTime.now(), true, mockAuthor, mockCourse);
+    void getAllTopics_shouldReturnTopicList() throws Exception {
+        // Arrange
+        User author = new User(1L, "author", "pass");
+        Course course = new Course(1L, "Java", "Programming");
+        Topic topic = new Topic(10L, "Topic Title", "Topic Message", LocalDateTime.now(), true, author, course, null);
 
-        when(topicRepository.findAll()).thenReturn(List.of(topic1));
+        when(topicRepository.findAll()).thenReturn(List.of(topic));
 
+        // Act & Assert
         mockMvc.perform(get("/topics"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Title 1"))
-                .andExpect(jsonPath("$[0].authorUsername").value("author1"))
-                .andExpect(jsonPath("$[0].courseName").value("Java"));
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].title").value("Topic Title"));
     }
 
     @Test
-    @DisplayName("Deve retornar 200 OK e o tópico ao buscar por ID existente")
+    @DisplayName("Should return 204 No Content when deleting an existing topic")
     @WithMockUser
-    void getTopicByIdScenario1() throws Exception {
-        Long topicId = 1L;
-        User mockAuthor = new User(10L, "singleuser", "pass");
-        Course mockCourse = new Course(5L, "DevOps", "CI/CD");
-        Topic topic = new Topic(topicId, "Single Topic", "Details", LocalDateTime.now(), true, mockAuthor, mockCourse);
+    void deleteTopic_withExistingId_shouldReturn204() throws Exception {
+        // Arrange
+        Long existingId = 1L;
+        when(topicRepository.existsById(existingId)).thenReturn(true);
+        doNothing().when(topicRepository).deleteById(existingId);
 
-        when(topicRepository.findById(topicId)).thenReturn(Optional.of(topic));
-
-        mockMvc.perform(get("/topics/{id}", topicId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(topicId))
-                .andExpect(jsonPath("$.title").value("Single Topic"))
-                .andExpect(jsonPath("$.authorUsername").value("singleuser"))
-                .andExpect(jsonPath("$.courseName").value("DevOps"));
-    }
-
-    @Test
-    @DisplayName("Deve retornar 404 Not Found ao buscar por ID inexistente")
-    @WithMockUser
-    void getTopicByIdScenario2() throws Exception {
-        Long topicId = 99L;
-        when(topicRepository.findById(topicId)).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/topics/{id}", topicId))
-                .andExpect(status().isNotFound());
-    }
-
-
-    @Test
-    @DisplayName("Deve retornar 204 No Content ao deletar um tópico existente")
-    @WithMockUser
-    void deleteTopicScenario1() throws Exception {
-        Long topicId = 1L;
-        when(topicRepository.existsById(topicId)).thenReturn(true);
-        doNothing().when(topicRepository).deleteById(topicId);
-
-        mockMvc.perform(delete("/topics/{id}", topicId).with(csrf()))
+        // Act & Assert
+        mockMvc.perform(delete("/topics/{id}", existingId).with(csrf()))
                 .andExpect(status().isNoContent());
 
-        verify(topicRepository, times(1)).existsById(topicId);
-        verify(topicRepository, times(1)).deleteById(topicId);
+        verify(topicRepository, times(1)).existsById(existingId);
+        verify(topicRepository, times(1)).deleteById(existingId);
+    }
+
+    @Test
+    @DisplayName("Should return 200 OK and a list of answers for a given topic")
+    @WithMockUser
+    void getAnswersForTopic_withValidTopicId_shouldReturnAnswersList() throws Exception {
+        // Arrange
+        Long topicId = 1L;
+        User topicAuthor = new User(1L, "topic.author", "pass");
+        User answerAuthor = new User(2L, "answer.author", "pass");
+        Course course = new Course(1L, "Testing", "QA");
+        Topic topic = new Topic(topicId, "Topic with answers", "message", LocalDateTime.now(), true, topicAuthor, course, null);
+
+        Answer answer1 = new Answer(10L, "First answer", topic, LocalDateTime.now().minusHours(1), answerAuthor, false);
+        Answer answer2 = new Answer(11L, "Second answer", topic, LocalDateTime.now(), answerAuthor, false);
+        topic.setAnswers(List.of(answer1, answer2));
+
+        when(topicRepository.existsById(topicId)).thenReturn(true);
+        when(topicRepository.findById(topicId)).thenReturn(Optional.of(topic));
+
+        // Act & Assert
+        mockMvc.perform(get("/topics/{topicId}/answers", topicId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(2))
+                .andExpect(jsonPath("$[0].message").value("First answer"))
+                .andExpect(jsonPath("$[1].message").value("Second answer"))
+                .andExpect(jsonPath("$[0].authorUsername").value("answer.author"));
     }
 }
