@@ -26,17 +26,12 @@ public class AuthenticationController {
 
     @PostMapping
     public ResponseEntity<JwtTokenDto> login(@RequestBody @Valid LoginDto loginDto) {
-        // Create an authentication object (not yet authenticated)
         var authenticationToken = new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
 
-        // Authenticate the user using the AuthenticationManager
-        // This will call AuthenticationService.loadUserByUsername and compare passwords
         var authentication = authenticationManager.authenticate(authenticationToken);
 
-        // If authentication is successful, generate a JWT token
         var jwtToken = tokenService.generateToken((User) authentication.getPrincipal());
 
-        // Return the token in the response
         return ResponseEntity.ok(new JwtTokenDto(jwtToken));
     }
 }

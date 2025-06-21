@@ -2,14 +2,14 @@ package com.rafaellor.forumhub.config;
 
 import com.rafaellor.forumhub.dto.ErrorResponseDto;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.dao.DataIntegrityViolationException; // For duplicate entries
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException; // For malformed JSON
-import org.springframework.security.access.AccessDeniedException; // For 403 Forbidden
-import org.springframework.security.authentication.BadCredentialsException; // For invalid login
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException; // For @Valid errors
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -19,10 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-@RestControllerAdvice // Combines @ControllerAdvice and @ResponseBody
+@RestControllerAdvice
 public class ErrorHandler {
 
-    // Handles validation errors (@Valid annotation)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationErrors(MethodArgumentNotValidException ex, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
@@ -43,7 +42,6 @@ public class ErrorHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // Handles resource not found errors
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleEntityNotFound(EntityNotFoundException ex, WebRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(
@@ -71,7 +69,6 @@ public class ErrorHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // Handles Data Integrity Violation (e.g., unique constraint violation for title/message/username)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponseDto> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
         String detailMessage = Objects.requireNonNull(ex.getRootCause()).getMessage();
@@ -95,7 +92,6 @@ public class ErrorHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
-    // Handles invalid login credentials
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponseDto> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(
@@ -109,7 +105,6 @@ public class ErrorHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
-    // Handles 403 Forbidden errors (e.g., when a user tries to access a resource without proper roles)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponseDto> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(
@@ -124,7 +119,6 @@ public class ErrorHandler {
     }
 
 
-    // Generic Exception Handler for all other unhandled exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGenericException(Exception ex, WebRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(
@@ -135,7 +129,6 @@ public class ErrorHandler {
                 ((ServletWebRequest)request).getRequest().getRequestURI(),
                 null
         );
-        // Log the exception for debugging in production
         ex.printStackTrace();
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

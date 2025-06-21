@@ -13,14 +13,14 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@ActiveProfiles("dev") // Use the H2 database profile for tests
+@ActiveProfiles("dev")
 class TopicRepositoryTest {
 
     @Autowired
     private TopicRepository topicRepository;
 
     @Autowired
-    private TestEntityManager em; // Helper for persisting entities in tests
+    private TestEntityManager em;
 
     @Test
     @DisplayName("Should return true when a topic with the given title exists")

@@ -18,7 +18,6 @@ public class TopicResponseDto {
     private String authorUsername;
     private String courseName;
 
-    // Constructor to convert Topic entity to DTO
     public TopicResponseDto(Topic topic) {
         this.id = topic.getId();
         this.title = topic.getTitle();
@@ -26,8 +25,6 @@ public class TopicResponseDto {
         this.creationDate = topic.getCreationDate();
         this.status = topic.getStatus();
         this.authorUsername = topic.getAuthor() != null ? topic.getAuthor().getUsername() : null;
-        // CORRECTED LINE:
-        // Access the name from the associated Course object using .getName()
         this.courseName = topic.getCourse() != null ? topic.getCourse().getName() : null;
     }
 }

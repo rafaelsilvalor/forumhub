@@ -1,6 +1,3 @@
--- V1: Creates all the main tables: users, profiles, user_profiles, courses, and topics.
--- This single script sets up the core structure of the database.
-
 -- Create the table for user roles
 CREATE TABLE profiles (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

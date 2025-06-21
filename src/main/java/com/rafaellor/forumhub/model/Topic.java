@@ -5,9 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.ArrayList; // Add this import
-import java.util.List; // Add this import
-import com.rafaellor.forumhub.model.Answer; // Add this import
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "topics")
@@ -23,24 +22,20 @@ public class Topic {
     private String title;
     private String message;
     private LocalDateTime creationDate;
-    private Boolean status; // true for active, false for closed
+    private Boolean status;
 
-    // Changed from String to ManyToOne relationship with User
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false) // Change "user_id" to "author_id"
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
-    private Course course; // Mudar de 'String course' para 'Curso curso'
+    private Course course;
 
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers = new ArrayList<>();
 
-    // private String course; // Keeping course as String for now
 
-    // Constructor for creating new topics (without ID, creationDate, and default status)
-    // Modified to accept User object instead of String author
     public Topic(String title, String message, User author, Course course) {
         this.title = title;
         this.message = message;
@@ -50,11 +45,6 @@ public class Topic {
         this.course = course;
     }
 
-    // Constructor needed for JPA/Lombok after adding @AllArgsConstructor for full fields including ID
-    // If you explicitly define @AllArgsConstructor, Lombok might conflict, so be mindful.
-    // Ensure you have constructors that JPA needs.
-
-    // Method to update topic
     public void update(String title, String message, Course course) {
         if (title != null && !title.isBlank()) {
             this.title = title;
@@ -67,7 +57,6 @@ public class Topic {
         }
     }
 
-    // Method to close topic
     public void close() {
         this.status = false;
     }
