@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,76 +15,79 @@ class TopicTest {
 
     @BeforeEach
     void setUp() {
-        // Criar objetos mock para serem usados nos testes
-        author = new User(1L, "testuser", "password");
+        // Create mock/stub objects for dependencies for each test
+        author = new User(1L, "Test Author", "author@test.com", "testauthor", "password", null);
         course = new Course(1L, "Test Course", "Testing");
     }
 
     @Test
-    @DisplayName("Deve criar um tópico com status padrão 'true' e data de criação atual")
-    void constructorTest() {
+    @DisplayName("Should create a topic with default status true and current creation date")
+    void constructor_shouldSetDefaultsCorrectly() {
+        // Arrange
         String title = "Test Title";
         String message = "Test Message";
 
-        // Usar o construtor atualizado com objetos User и Curso
+        // Act
         Topic topic = new Topic(title, message, author, course);
 
-        // O ID será nulo até ser persistido, então não testamos aqui.
-        assertNull(topic.getId());
+        // Assert
+        assertNull(topic.getId(), "ID should be null before persistence");
         assertEquals(title, topic.getTitle());
         assertEquals(message, topic.getMessage());
-        assertEquals(author, topic.getAuthor(), "O autor deve ser o objeto User fornecido");
-        assertEquals(course, topic.getCourse(), "O curso deve ser o objeto Curso fornecido");
-        assertTrue(topic.getStatus(), "O status de um novo tópico deve ser 'true' (ativo)");
-        assertNotNull(topic.getCreationDate(), "A data de criação não deve ser nula");
-        assertTrue(topic.getCreationDate().isBefore(LocalDateTime.now().plusSeconds(1)), "A data de criação deve ser a atual");
+        assertEquals(author, topic.getAuthor(), "Should correctly assign the author object");
+        assertEquals(course, topic.getCourse(), "Should correctly assign the course object");
+        assertTrue(topic.getStatus(), "New topic status should default to true (active)");
+        assertNotNull(topic.getCreationDate(), "Creation date should not be null");
+        assertTrue(topic.getCreationDate().isBefore(LocalDateTime.now().plusSeconds(1)), "Creation date should be current");
     }
 
     @Test
-    @DisplayName("Deve atualizar o título, a mensagem e o curso do tópico corretamente")
-    void updateTopicTest() {
+    @DisplayName("Should update topic title, message, and course correctly")
+    void update_shouldModifyFields() {
+        // Arrange
         Topic topic = new Topic("Old Title", "Old Message", author, course);
-
         String newTitle = "New Title";
         String newMessage = "New Message";
         Course newCourse = new Course(2L, "New Course", "New Category");
 
-        // Chamar o método de atualização com o novo objeto Curso
+        // Act
         topic.update(newTitle, newMessage, newCourse);
 
+        // Assert
         assertEquals(newTitle, topic.getTitle());
         assertEquals(newMessage, topic.getMessage());
-        assertEquals(newCourse, topic.getCourse(), "O curso deve ser atualizado para o novo objeto Curso");
+        assertEquals(newCourse, topic.getCourse(), "The course should be updated to the new object");
     }
 
     @Test
-    @DisplayName("Não deve atualizar campos do tópico se os novos valores forem nulos ou em branco")
-    void updateTopicWithNullOrBlankTest() {
+    @DisplayName("Should not update topic fields if new values are null or blank")
+    void update_withNullOrBlank_shouldNotModifyFields() {
+        // Arrange
         String originalTitle = "Original Title";
         String originalMessage = "Original Message";
-
         Topic topic = new Topic(originalTitle, originalMessage, author, course);
+        Course originalCourse = topic.getCourse();
 
-        Course originalCourse = topic.getCourse(); // Guardar o curso original
-
-        // Tentar atualizar com valores nulos e em branco.
-        // O último parâmetro (curso) é nulo.
+        // Act: Attempt to update with null title, blank message, and null course
         topic.update(null, " ", null);
 
-        assertEquals(originalTitle, topic.getTitle(), "O título não deve mudar se o novo valor for nulo");
-        assertEquals(originalMessage, topic.getMessage(), "A mensagem não deve mudar se a nova for em branco");
-        assertEquals(originalCourse, topic.getCourse(), "O curso não deve mudar se o novo valor for nulo");
+        // Assert
+        assertEquals(originalTitle, topic.getTitle(), "Title should not change if the new value is null");
+        assertEquals(originalMessage, topic.getMessage(), "Message should not change if the new value is blank");
+        assertEquals(originalCourse, topic.getCourse(), "Course should not change if the new value is null");
     }
 
     @Test
-    @DisplayName("Deve definir o status do tópico como 'false' ao ser fechado")
-    void closeTopicTest() {
-        Topic topic = new Topic("Title", "Message", author, course);
+    @DisplayName("Should set topic status to false when closed")
+    void close_shouldSetStatusToFalse() {
+        // Arrange
+        Topic topic = new Topic("An Open Topic", "Message", author, course);
+        assertTrue(topic.getStatus(), "Topic should be active initially");
 
-        // Ação
+        // Act
         topic.close();
 
-        // Verificação
-        assertFalse(topic.getStatus(), "O status do tópico deve ser 'false' após ser fechado");
+        // Assert
+        assertFalse(topic.getStatus(), "Topic status should be false after closing");
     }
 }

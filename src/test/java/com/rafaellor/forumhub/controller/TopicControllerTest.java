@@ -68,7 +68,7 @@ class TopicControllerTest {
         createDto.setMessage("A valid message for the topic.");
         createDto.setCourseId(1L);
 
-        User author = new User(1L, "test.user", "password");
+        User author = new User(1L, "Test User", "test@user.com", "test.user", "password", null);
         Course course = new Course(1L, "Spring Boot", "Backend");
         Topic savedTopic = new Topic("Valid Title", "A valid message for the topic.", author, course);
         savedTopic.setId(10L);
@@ -115,7 +115,7 @@ class TopicControllerTest {
     @WithMockUser
     void getAllTopics_shouldReturnTopicList() throws Exception {
         // Arrange
-        User author = new User(1L, "author", "pass");
+        User author = new User(1L, "author", "author@email.com", "author", "pass", null);
         Course course = new Course(1L, "Java", "Programming");
         Topic topic = new Topic(10L, "Topic Title", "Topic Message", LocalDateTime.now(), true, author, course, null);
 
@@ -151,8 +151,8 @@ class TopicControllerTest {
     void getAnswersForTopic_withValidTopicId_shouldReturnAnswersList() throws Exception {
         // Arrange
         Long topicId = 1L;
-        User topicAuthor = new User(1L, "topic.author", "pass");
-        User answerAuthor = new User(2L, "answer.author", "pass");
+        User topicAuthor = new User(1L, "topic.author", "topic@author.com", "topic.author", "pass", null);
+        User answerAuthor = new User(2L, "answer.author", "answer@author.com", "answer.author", "pass", null);
         Course course = new Course(1L, "Testing", "QA");
         Topic topic = new Topic(topicId, "Topic with answers", "message", LocalDateTime.now(), true, topicAuthor, course, null);
 
