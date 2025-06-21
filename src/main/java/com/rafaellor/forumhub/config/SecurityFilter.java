@@ -15,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component // Make this filter a Spring component
+@Component
 public class SecurityFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -34,12 +34,11 @@ public class SecurityFilter extends OncePerRequestFilter {
             var subject = tokenService.getSubject(tokenJWT); // Get the username from the token
             UserDetails user = userRepository.findByUsername(subject); // Load user details
 
-            // Create an authentication object and set it in the SecurityContextHolder
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
-        filterChain.doFilter(request, response); // Proceed to the next filter in the chain
+        filterChain.doFilter(request, response);
     }
 
     private String recoverToken(HttpServletRequest request) {

@@ -9,32 +9,47 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "users") // Renamed from 'user' to 'users' for common convention
+@Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails { // Implement UserDetails for Spring Security
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true) // Username must be unique
+    // Field for user's full name (for display)
+    private String name;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(unique = true, nullable = false)
     private String username;
 
     private String password;
 
-    // You might add roles here later, e.g., private UserRole role;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_profiles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "profile_id")
+    )
+    private Set<Profile> profiles;
 
-    // --- UserDetails interface methods ---
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // For simplicity, we'll return a default role for now.
-        // In a real application, you'd load roles from the database.
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        if (profiles == null) {
+            return Set.of();
+        }
+        return profiles.stream()
+                .map(profile -> new SimpleGrantedAuthority(profile.getName()))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -49,21 +64,21 @@ public class User implements UserDetails { // Implement UserDetails for Spring S
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Always true for now
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // Always true for now
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // Always true for now
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return true; // Always true for now
+        return true;
     }
 }
