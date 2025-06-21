@@ -1,4 +1,3 @@
-// src/main/java/com/rafaellor/forumhub/model/Topic.java
 package com.rafaellor.forumhub.model;
 
 import jakarta.persistence.*;
@@ -6,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import com.rafaellor.forumhub.model.Curso;
 
 @Entity
 @Table(name = "topics")
@@ -28,17 +28,21 @@ public class Topic {
     @JoinColumn(name = "user_id", nullable = false) // Foreign key column name, not nullable
     private User author;
 
-    private String course; // Keeping course as String for now
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "curso_id", nullable = false)
+    private Curso curso; // Mudar de 'String course' para 'Curso curso'
+
+    // private String course; // Keeping course as String for now
 
     // Constructor for creating new topics (without ID, creationDate, and default status)
     // Modified to accept User object instead of String author
-    public Topic(String title, String message, User author, String course) {
+    public Topic(String title, String message, User author, Curso curso) {
         this.title = title;
         this.message = message;
         this.creationDate = LocalDateTime.now();
         this.status = true; // Default to active
         this.author = author;
-        this.course = course;
+        this.curso = curso;
     }
 
     // Constructor needed for JPA/Lombok after adding @AllArgsConstructor for full fields including ID
@@ -46,15 +50,15 @@ public class Topic {
     // Ensure you have constructors that JPA needs.
 
     // Method to update topic
-    public void update(String title, String message, String course) {
+    public void update(String title, String message, Curso curso) {
         if (title != null && !title.isBlank()) {
             this.title = title;
         }
         if (message != null && !message.isBlank()) {
             this.message = message;
         }
-        if (course != null && !course.isBlank()) {
-            this.course = course;
+        if (curso != null) {
+            this.curso = curso;
         }
     }
 
