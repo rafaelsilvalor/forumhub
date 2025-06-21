@@ -1,5 +1,6 @@
 package com.rafaellor.forumhub.controller;
 
+import com.rafaellor.forumhub.dto.AnswerResponseDto;
 import com.rafaellor.forumhub.dto.TopicCreateDto;
 import com.rafaellor.forumhub.dto.TopicResponseDto;
 import com.rafaellor.forumhub.model.Course;
@@ -118,5 +119,20 @@ public class TopicController {
             return ResponseEntity.noContent().build(); // Retorna 204 No Content
         }
         return ResponseEntity.notFound().build(); // Retorna 404 Not Found
+    }
+    @GetMapping("/{topicId}/answers")
+    public ResponseEntity<List<AnswerResponseDto>> getAnswersForTopic(@PathVariable Long topicId) {
+        if (!topicRepository.existsById(topicId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // We can get the answers directly from the topic's relationship
+        Topic topic = topicRepository.findById(topicId).get(); // We already checked existence
+
+        List<AnswerResponseDto> answers = topic.getAnswers().stream()
+                .map(AnswerResponseDto::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(answers);
     }
 }
