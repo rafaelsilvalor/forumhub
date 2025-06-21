@@ -17,10 +17,13 @@ CREATE TABLE user_profiles (
 ALTER TABLE users ADD COLUMN name VARCHAR(255);
 ALTER TABLE users ADD COLUMN email VARCHAR(255);
 
--- Make email unique and not null after populating existing records (if any)
--- For a new setup, we can add the constraints directly.
--- If you have existing users, you would first need to update their emails.
--- UPDATE users SET email = CONCAT(username, '@example.com') WHERE email IS NULL;
+-- *** FIX IS HERE ***
+-- Update existing rows to have a default value before adding constraints.
+-- This prevents the "Invalid use of NULL value" error.
+UPDATE users SET email = CONCAT(username, '@forum.com') WHERE email IS NULL;
+UPDATE users SET name = username WHERE name IS NULL;
+
+-- Now, it is safe to apply the NOT NULL constraint
 ALTER TABLE users MODIFY COLUMN email VARCHAR(255) NOT NULL UNIQUE;
 
 
