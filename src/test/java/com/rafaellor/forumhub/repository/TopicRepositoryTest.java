@@ -1,89 +1,122 @@
 package com.rafaellor.forumhub.repository;
 
+import com.rafaellor.forumhub.model.Curso;
 import com.rafaellor.forumhub.model.Topic;
+import com.rafaellor.forumhub.model.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // Use real DB if configured, otherwise H2
-@ActiveProfiles("test") // Use a dedicated 'test' profile if you have one, or 'dev' for H2
+// O profile 'dev' usa o banco de dados H2 em memória, ideal para testes.
+@ActiveProfiles("dev")
 class TopicRepositoryTest {
 
     @Autowired
     private TopicRepository topicRepository;
 
     @Autowired
-    private TestEntityManager em; // Used to manage entities in tests
-
-    private Topic createAndPersistTopic(String title, String message, String author, String course) {
-        Topic topic = new Topic(title, message, author, course);
-        return em.persistAndFlush(topic);
-    }
+    private TestEntityManager em; // Gerenciador de entidades para testes de persistência
 
     @Test
-    @DisplayName("Should return true when a topic with the given title exists")
+    @DisplayName("Deve retornar true quando um tópico com o título informado existir")
     void existsByTitleScenario1() {
-        createAndPersistTopic("Unique Title", "Some message", "Author A", "Course X");
-        assertTrue(topicRepository.existsByTitle("Unique Title"));
+        // Arrange: Preparação
+        User author = new User(null, "author.test", "123456");
+        em.persist(author);
+        Curso course = new Curso(null, "JPA", "Backend");
+        em.persist(course);
+        Topic topic = new Topic("Título Único", "Mensagem de teste", author, course);
+        em.persist(topic);
+
+        // Act: Ação
+        boolean exists = topicRepository.existsByTitle("Título Único");
+
+        // Assert: Verificação
+        assertThat(exists).isTrue();
     }
 
     @Test
-    @DisplayName("Should return false when a topic with the given title does not exist")
+    @DisplayName("Deve retornar false quando um tópico com o título informado não existir")
     void existsByTitleScenario2() {
-        assertFalse(topicRepository.existsByTitle("Nonexistent Title"));
+        // Act
+        boolean exists = topicRepository.existsByTitle("Título Inexistente");
+
+        // Assert
+        assertThat(exists).isFalse();
     }
 
     @Test
-    @DisplayName("Should return true when a topic with the given message exists")
+    @DisplayName("Deve retornar true quando um tópico com a mensagem informada existir")
     void existsByMessageScenario1() {
-        createAndPersistTopic("Another Title", "Unique Message", "Author B", "Course Y");
-        assertTrue(topicRepository.existsByMessage("Unique Message"));
+        // Arrange
+        User author = new User(null, "author.test2", "123456");
+        em.persist(author);
+        Curso course = new Curso(null, "Spring Test", "Testes");
+        em.persist(course);
+        Topic topic = new Topic("Outro Título", "Mensagem Única", author, course);
+        em.persist(topic);
+
+        // Act
+        boolean exists = topicRepository.existsByMessage("Mensagem Única");
+
+        // Assert
+        assertThat(exists).isTrue();
     }
 
     @Test
-    @DisplayName("Should return false when a topic with the given message does not exist")
+    @DisplayName("Deve retornar false quando um tópico com a mensagem informada não existir")
     void existsByMessageScenario2() {
-        assertFalse(topicRepository.existsByMessage("Nonexistent Message"));
+        // Act
+        boolean exists = topicRepository.existsByMessage("Mensagem Inexistente");
+
+        // Assert
+        assertThat(exists).isFalse();
     }
 
     @Test
-    @DisplayName("Should find a topic by ID")
-    void findByIdTest() {
-        Topic topic = createAndPersistTopic("Find Me", "Message for find", "Author C", "Course Z");
-        Topic foundTopic = topicRepository.findById(topic.getId()).orElse(null);
-        assertNotNull(foundTopic);
-        assertEquals(topic.getTitle(), foundTopic.getTitle());
-    }
-
-    @Test
-    @DisplayName("Should save a new topic successfully")
+    @DisplayName("Deve salvar um novo tópico com sucesso")
     void saveTopicTest() {
-        Topic newTopic = new Topic("New Saved Title", "New Saved Message", "New Author", "New Course");
+        // Arrange
+        User author = new User(null, "author.save", "123456");
+        em.persist(author);
+        Curso course = new Curso(null, "Hibernate", "Backend");
+        em.persist(course);
+        Topic newTopic = new Topic("Tópico para Salvar", "Mensagem para salvar", author, course);
+
+        // Act
         Topic savedTopic = topicRepository.save(newTopic);
 
-        assertNotNull(savedTopic.getId());
-        assertEquals("New Saved Title", savedTopic.getTitle());
-        assertTrue(savedTopic.getStatus()); // Default status
-        assertNotNull(savedTopic.getCreationDate());
+        // Assert
+        assertThat(savedTopic).isNotNull();
+        assertThat(savedTopic.getId()).isNotNull();
+        assertThat(savedTopic.getTitle()).isEqualTo("Tópico para Salvar");
+        assertThat(savedTopic.getAuthor().getUsername()).isEqualTo("author.save");
+        assertThat(savedTopic.getCurso().getNome()).isEqualTo("Hibernate");
     }
 
     @Test
-    @DisplayName("Should delete a topic by ID")
+    @DisplayName("Deve deletar um tópico por ID")
     void deleteTopicByIdTest() {
-        Topic topic = createAndPersistTopic("Delete Me", "Message to delete", "Author D", "Course W");
-        Long topicId = topic.getId();
+        // Arrange
+        User author = new User(null, "author.delete", "123456");
+        em.persist(author);
+        Curso course = new Curso(null, "Mockito", "Testes");
+        em.persist(course);
+        Topic topic = new Topic("Tópico para Deletar", "Mensagem a ser deletada", author, course);
+        Topic persistedTopic = em.persistFlushFind(topic);
+        Long topicId = persistedTopic.getId();
 
-        assertTrue(topicRepository.existsById(topicId));
+        // Act
         topicRepository.deleteById(topicId);
-        assertFalse(topicRepository.existsById(topicId));
+
+        // Assert
+        Topic deletedTopic = em.find(Topic.class, topicId);
+        assertThat(deletedTopic).isNull();
     }
 }
