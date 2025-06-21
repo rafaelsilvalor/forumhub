@@ -1,139 +1,236 @@
-[![Java 24](https://img.shields.io/badge/Java-24-blue.svg)](https://www.oracle.com/java/) [![Spring Boot 3](https://img.shields.io/badge/Spring%20Boot-3-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Maven](https://img.shields.io/badge/Maven-3-red.svg)](https://maven.apache.org/) [![H2 Database](https://img.shields.io/badge/H2-Database-lightgrey.svg)](https://www.h2database.com/) [![MySQL](https://img.shields.io/badge/MySQL-8-orange.svg)](https://www.mysql.com/)
+[![Java 24](https://img.shields.io/badge/Java-24-blue.svg)](https://www.oracle.com/java/) [![Spring Boot 3.5.0](https://img.shields.io/badge/Spring%20Boot-3.5.0-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Maven](https://img.shields.io/badge/Maven-4.0.0-red.svg)](https://maven.apache.org/) [![MySQL](https://img.shields.io/badge/MySQL-8.0-orange.svg)](https://www.mysql.com/) [![JWT Auth](https://img.shields.io/badge/Auth-JWT-yellowgreen.svg)](https://jwt.io/)
 
 # Fórum Hub API
 
-Bem-vindo à **API do Fórum Hub**! Este projeto backend segue os princípios REST para uma plataforma de fórum onde usuários podem criar tópicos, interagir com respostas e muito mais.
+Bem-vindo à **API do Fórum Hub**! Este projeto backend segue os princípios REST para uma plataforma de fórum completa, onde os utilizadores podem registar-se, criar tópicos de discussão, interagir com respostas e muito mais.
 
 ---
 
 ## 📋 Sumário
 
-1. [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-2. [Estrutura do Projeto](#-estrutura-do-projeto)
-3. [Configuração de Banco de Dados (Profiles)](#-configuração-de-banco-de-dados-profiles)
-4. [Diagrama de Fluxo](#-diagrama-de-fluxo)
-5. [Como Executar o Projeto](#-como-executar-o-projeto)
-6. [Próximos Passos](#-próximos-passos)
+1. [Funcionalidades Principais](#-funcionalidades-principais)
+2. [Tecnologias Utilizadas](#-tecnologias-utilizadas)
+3. [Estrutura do Projeto](#-estrutura-do-projeto)
+4. [Esquema da Base de Dados](#-esquema-da-base-de-dados)
+5. [Diagrama de Fluxo da API](#-diagrama-de-fluxo-da-api)
+6. [Endpoints da API](#-endpoints-da-api)
+7. [Configuração e Execução](#-configuração-e-execução)
+8. [Próximos Passos](#-próximos-passos)
+9. [Autor](#-autor)
+
+---
+
+## ✨ Funcionalidades Principais
+
+* **Autenticação e Registo de Utilizadores**: Sistema seguro de registo de utilizadores e autenticação baseada em JWT para proteger os endpoints.
+* **Gestão de Tópicos**: Funcionalidade CRUD (Criar, Ler, Atualizar, Apagar) completa para os tópicos de discussão.
+* **Gestão de Respostas**: Funcionalidade CRUD para respostas, incluindo a capacidade de marcar uma resposta como a solução para um tópico.
+* **Sistema Baseado em Perfis (Roles)**: Uma estrutura flexível com entidades `User` e `Profile` para suportar futuras regras de autorização.
+* **Migrações de Base de Dados**: O esquema da base de dados é gerido de forma limpa e automática com o Flyway.
+* **Perfis de Ambiente**: Pré-configurado para ambientes de `dev` (base de dados H2 em memória) e `prod` (base de dados MySQL persistente).
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-* **Java 24**
-* **Spring Boot 3**
-* **Spring Web**
-* **Spring Data JPA**
-* **Spring Security**
-* **Maven**
-* **Lombok**
-* **H2 Database** (Dev)
-* **MySQL** (Prod)
-* **Bean Validation**
+* **Java 24**
+* **Spring Boot 3.5.0**
+* **Spring Web** (para APIs RESTful)
+* **Spring Data JPA** (para persistência de dados)
+* **Spring Security** (para autenticação e segurança)
+* **Hibernate** (implementação JPA)
+* **MySQL** (Base de dados de produção)
+* **H2 Database** (Base de dados de desenvolvimento/teste)
+* **Flyway** (para migrações de esquema da base de dados)
+* **Lombok** (para reduzir código repetitivo)
+* **Maven** (gestão de dependências e build do projeto)
+* **java-jwt** (para criação e validação de tokens JWT)
+* **Bean Validation** (para validação de dados de entrada)
 
 ---
 
 ## 📁 Estrutura do Projeto
 
-```
+```bash
 forumhub/
-├── .mvn/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/forumhub/                # Pacote base da aplicação
-│   │   │       ├── config/
-│   │   │       ├── controller/
-│   │   │       ├── dto/
-│   │   │       ├── model/
-│   │   │       ├── repository/
-│   │   │       ├── service/
-│   │   │       └── ForumhubApplication.java
-│   │   └── resources/
-│   │       ├── application.properties      # Configurações gerais
-│   │       ├── application-dev.properties  # Profile dev (H2)
-│   │       └── application-prod.properties # Profile prod (MySQL)
-│   └── test/
-└── pom.xml
+└── src/
+├── main/
+│   ├── java/
+│   │   └── com/rafaellor/forumhub/
+│   │       ├── config/                # Configs: SecurityConfig, ErrorHandler
+│   │       ├── controller/            # Controladores da API REST
+│   │       │   ├── AuthenticationController.java
+│   │       │   ├── TopicController.java
+│   │       │   ├── AnswerController.java
+│   │       │   └── UserController.java
+│   │       ├── dto/                   # Data Transfer Objects
+│   │       ├── model/                 # Entidades JPA (Domínio)
+│   │       │   ├── User.java
+│   │       │   ├── Profile.java
+│   │       │   ├── Course.java
+│   │       │   ├── Topic.java
+│   │       │   └── Answer.java
+│   │       ├── repository/            # Repositórios Spring Data
+│   │       └── service/               # Lógica de negócio
+│   └── resources/
+│       ├── db/migration/              # Scripts de migração Flyway
+│       └── application.properties     # Configurações
+└── test/                              # Testes unitários e de integração
 ```
 
 ---
 
-## 🏦 Configuração de Banco de Dados e Ambientes (Profiles)
+## 🗃️ Esquema da Base de Dados
 
-O projeto é configurado para operar em dois ambientes distintos utilizando **Spring Profiles**, garantindo flexibilidade entre desenvolvimento e produção. A troca de ambiente é feita sem nenhuma alteração no código-fonte.
+```mermaid
+erDiagram
+    users {
+        BIGINT id PK
+        VARCHAR name
+        VARCHAR username "unique"
+        VARCHAR email "unique"
+        VARCHAR password
+    }
 
-* ### **Ambiente de Desenvolvimento: `dev` (Padrão)**
-    * **Banco de Dados:** **H2 Database** em memória.
-    * **Comportamento:** O banco é criado no início da execução e destruído ao final. Ideal para desenvolvimento e testes ágeis, pois não requer instalação ou configuração externa.
-    * **Console H2:** Para visualizar e gerenciar o banco de dados em tempo real, acesse `http://localhost:8080/h2-console` no seu navegador após iniciar a aplicação.
+    profiles {
+        BIGINT id PK
+        VARCHAR name "unique, e.g., ROLE_USER"
+    }
 
-* ### **Ambiente de Produção: `prod`**
-    * **Banco de Dados:** **MySQL**.
-    * **Comportamento:** Conecta-se a um banco de dados persistente, garantindo que os dados sejam mantidos entre as reinicializações da aplicação.
-    * **Ação Necessária:** Antes de ativar este profile, é necessário ter uma instância do MySQL ativa e configurar as credenciais de acesso (URL do banco, usuário e senha) no arquivo `src/main/resources/application-prod.properties`.
+    user_profiles {
+        BIGINT user_id FK
+        BIGINT profile_id FK
+    }
+
+    courses {
+        BIGINT id PK
+        VARCHAR name "unique"
+        VARCHAR category
+    }
+
+    topics {
+        BIGINT id PK
+        VARCHAR title "unique"
+        VARCHAR message "unique"
+        DATETIME creation_date
+        BOOLEAN status
+        BIGINT author_id FK
+        BIGINT course_id FK
+    }
+
+    answers {
+        BIGINT id PK
+        TEXT message
+        DATETIME creation_date
+        BOOLEAN solution
+        BIGINT topic_id FK
+        BIGINT author_id FK
+    }
+
+    users ||--o{ topics : "authors"
+    users ||--o{ answers : "authors"
+    users }o--o{ profiles : "has"
+    user_profiles ||--|{ users : "maps"
+    user_profiles ||--|{ profiles : "maps"
+    courses ||--o{ topics : "categorizes"
+    topics ||--o{ answers : "contains"
+```
 
 ---
 
-## 🔄 Diagrama de Fluxo
+## 🔄 Diagrama de Fluxo da API
 
 ```mermaid
 sequenceDiagram
-    participant User as Usuário
+    participant User as Utilizador
     participant Controller as Controller
     participant Service as Service
-    participant Repo as Repository
-    participant DB as Banco de Dados
+    participant Repository as Repository
+    participant DB as Base de Dados
 
-    User->>+Controller: POST /topicos (dados JSON)
+    User->>+Controller: POST /topics (dados JSON)
     Controller->>+Service: criarTopico(dto)
-    Service->>+Repo: save(entidade)
-    Repo-->>-Service: entidade com ID
+    Service->>+Repository: save(entidade)
+    Repository-->>-Service: entidade com ID
     Service-->>-Controller: DTO criado
-    Controller-->>-User: HTTP 201 Created
+    Controller-->>-User: HTTP 201 Created
 ```
 
 ---
 
-## ⚙️ Como Executar o Projeto
+## 🌐 Endpoints da API
 
-1. **Clone o repositório**:
+| Método | Endpoint               | Autenticação | Descrição                          |
+| ------ | ---------------------- | ------------ | ---------------------------------- |
+| POST   | /register              | Público      | Regista um novo utilizador         |
+| POST   | /login                 | Público      | Autentica utilizador e retorna JWT |
+| POST   | /topics                | Requerida    | Cria um novo tópico                |
+| GET    | /topics                | Requerida    | Lista todos os tópicos             |
+| GET    | /topics/{id}           | Requerida    | Obtém um tópico pelo ID            |
+| PUT    | /topics/{id}           | Requerida    | Atualiza um tópico existente       |
+| DELETE | /topics/{id}           | Requerida    | Apaga um tópico                    |
+| GET    | /topics/{id}/answers   | Requerida    | Lista respostas de um tópico       |
+| POST   | /answers               | Requerida    | Cria uma nova resposta             |
+| PUT    | /answers/{id}          | Requerida    | Atualiza uma resposta existente    |
+| PATCH  | /answers/{id}/solution | Requerida    | Marca resposta como solução        |
+| DELETE | /answers/{id}          | Requerida    | Apaga uma resposta                 |
 
-   ```bash
-   git clone <URL_DO_REPOSITÓRIO>
-   cd forumhub
-   ```
+---
 
-2. **Execução com profile `dev` (H2)**:
+## ⚙️ Configuração e Execução
 
-   ```bash
-   ./mvnw spring-boot:run
-   ```
+### Pré-requisitos
 
-   A API ficará disponível em `http://localhost:8080`.
+* Java 24
+* Maven
+* MySQL instalado e ativo
 
-3. **Execução com profile `prod` (MySQL)**:
+### Clonar o Repositório
 
-   ```bash
-   ./mvnw spring-boot:run -Dspring-boot.run.profiles=prod
-   ```
+```bash
+git clone <URL_DO_SEU_REPOSITÓRIO>
+cd forumhub
+```
 
-   Ou:
+### Configurar MySQL (modo produção)
 
-   ```bash
-   java -jar target/forumhub-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
-   ```
+1. Crie o banco `forumhubdb` no MySQL
+2. Edite `application-prod.properties` com as credenciais:
+
+```properties
+spring.datasource.username=SEU_USUARIO
+spring.datasource.password=SUA_SENHA
+```
+
+### Executar em modo `dev` (H2)
+
+```bash
+./mvnw spring-boot:run
+```
+
+Acesse: [http://localhost:8080](http://localhost:8080) e o console H2: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+
+### Executar em modo `prod` (MySQL)
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=prod
+```
+
+O Flyway aplicará as migrações automaticamente.
 
 ---
 
 ## 🚀 Próximos Passos
 
-* Definir entidade **Tópico** e seu **DTO**.
-* Implementar testes unitários com JUnit.
-* Adicionar autenticação JWT via Spring Security.
-* Configurar persistência em **PostgreSQL** ou outro SGBD.
+* Adicionar regras de autorização com base no autor
+* Implementar paginação nos endpoints de listagem
+* Documentar API com Swagger (Springdoc)
+* Criar testes automatizados (unitários e integração)
 
 ---
 
-<p align="center">
-  <em>Desenvolvido com ♥ por Rafael Gomes Silva</em>
-</p>
+## ✍️ Autor
+
+Desenvolvido por **Rafael Gomes Silva**
+
+[LinkedIn](https://www.linkedin.com/in/rafaellor) | [GitHub](https://github.com/rafaelsilvalor)
