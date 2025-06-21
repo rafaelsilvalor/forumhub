@@ -24,30 +24,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // Disable CSRF protection, which is necessary for stateless APIs
                 .csrf(csrf -> csrf.disable())
-
-                // Configure session management to be stateless
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // Configure authorization rules for HTTP requests
                 .authorizeHttpRequests(req -> {
-                    // Allow unauthenticated access to the login and register endpoints
                     req.requestMatchers(HttpMethod.POST, "/login", "/register").permitAll();
-
-                    // Allow access to the H2 console for development
                     req.requestMatchers("/h2-console/**").permitAll();
-
-                    // All other requests must be authenticated
                     req.anyRequest().authenticated();
                 })
-
-                // For H2 console to work, we need to disable frame options
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-
-                // Add our custom JWT filter before the standard username/password filter
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
-
                 .build();
     }
 

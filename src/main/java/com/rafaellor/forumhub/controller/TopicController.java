@@ -38,24 +38,19 @@ public class TopicController {
     public ResponseEntity<TopicResponseDto> createTopic(@RequestBody @Valid TopicCreateDto topicCreateDto,
                                                         UriComponentsBuilder uriComponentsBuilder) {
 
-        // Pega o usuário autenticado do contexto de segurança
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User authenticatedUser = (User) authentication.getPrincipal();
 
-        // Verifica se já existe um tópico com o mesmo título ou mensagem
         if (topicRepository.existsByTitle(topicCreateDto.getTitle())) {
-            // Lança uma exceção que será capturada pelo ErrorHandler para retornar um erro 409 Conflict
             throw new DataIntegrityViolationException("Title already exists");
         }
         if (topicRepository.existsByMessage(topicCreateDto.getMessage())) {
             throw new DataIntegrityViolationException("Message already exists");
         }
 
-        // Busca a entidade completa do Curso usando o ID fornecido no DTO
         Course course = courseRepository.findById(topicCreateDto.getCourseId())
                 .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + topicCreateDto.getCourseId()));
 
-        // Cria o Tópico, passando o objeto User autenticado e o objeto Curso encontrado
         Topic topic = new Topic(
                 topicCreateDto.getTitle(),
                 topicCreateDto.getMessage(),
@@ -63,10 +58,8 @@ public class TopicController {
         );
         topic = topicRepository.save(topic);
 
-        // Constrói a URI para o novo recurso criado
         URI uri = uriComponentsBuilder.path("/topics/{id}").buildAndExpand(topic.getId()).toUri();
 
-        // Retorna a resposta 201 Created com a localização do novo recurso e o DTO do tópico criado
         return ResponseEntity.created(uri).body(new TopicResponseDto(topic));
     }
 
@@ -91,7 +84,6 @@ public class TopicController {
                                                         @RequestBody @Valid TopicCreateDto topicUpdateDto) {
         return topicRepository.findById(id)
                 .map(topic -> {
-                    // Verifica duplicidade apenas se o título ou mensagem foi alterado
                     if (!topic.getTitle().equals(topicUpdateDto.getTitle()) && topicRepository.existsByTitle(topicUpdateDto.getTitle())) {
                         throw new DataIntegrityViolationException("Title already exists");
                     }
@@ -99,11 +91,9 @@ public class TopicController {
                         throw new DataIntegrityViolationException("Message already exists");
                     }
 
-                    // Busca o novo curso se um ID for fornecido
                     Course course = courseRepository.findById(topicUpdateDto.getCourseId())
                             .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + topicUpdateDto.getCourseId()));
 
-                    // Atualiza o tópico com os novos dados
                     topic.update(topicUpdateDto.getTitle(), topicUpdateDto.getMessage(), course);
 
                     return ResponseEntity.ok(new TopicResponseDto(topic));
@@ -126,7 +116,6 @@ public class TopicController {
             return ResponseEntity.notFound().build();
         }
 
-        // We can get the answers directly from the topic's relationship
         Topic topic = topicRepository.findById(topicId).get(); // We already checked existence
 
         List<AnswerResponseDto> answers = topic.getAnswers().stream()

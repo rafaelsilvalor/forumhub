@@ -34,7 +34,6 @@ public class UserController {
     @PostMapping
     @Transactional
     public ResponseEntity<Void> registerUser(@RequestBody @Valid UserCreateDto createDto) {
-        // Check if username or email already exist
         if (userRepository.findByUsername(createDto.getUsername()) != null) {
             throw new DataIntegrityViolationException("Username already exists.");
         }
@@ -42,14 +41,12 @@ public class UserController {
             throw new DataIntegrityViolationException("Email already in use.");
         }
 
-        // Create a new User entity
         User newUser = new User();
         newUser.setName(createDto.getName());
         newUser.setUsername(createDto.getUsername());
         newUser.setEmail(createDto.getEmail());
         newUser.setPassword(passwordEncoder.encode(createDto.getPassword()));
 
-        // Assign a default role/profile to the new user
         Profile defaultProfile = profileRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Error: Default profile ROLE_USER not found."));
         newUser.setProfiles(Set.of(defaultProfile));

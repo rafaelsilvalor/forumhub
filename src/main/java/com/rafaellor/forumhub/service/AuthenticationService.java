@@ -15,8 +15,6 @@ public class AuthenticationService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Fetch user from the database using UserRepository
-        // The User entity already implements UserDetails, so it can be returned directly
         return userRepository.findByUsername(username);
     }
 }

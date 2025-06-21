@@ -16,7 +16,6 @@ public class AnswerResponseDto {
     private String authorUsername;
     private Boolean solution;
 
-    // Constructor to map from the Answer entity
     public AnswerResponseDto(Answer answer) {
         this.id = answer.getId();
         this.message = answer.getMessage();

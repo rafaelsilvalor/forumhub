@@ -1,6 +1,3 @@
--- V2: Inserts essential starting data for the application to function correctly.
--- This includes default roles and some sample courses.
-
 -- Insert default profiles/roles
 INSERT INTO profiles (name) VALUES ('ROLE_USER');
 INSERT INTO profiles (name) VALUES ('ROLE_ADMIN');

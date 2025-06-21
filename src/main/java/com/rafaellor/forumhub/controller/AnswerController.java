@@ -34,15 +34,12 @@ public class AnswerController {
     @PostMapping
     @Transactional
     public ResponseEntity<AnswerResponseDto> createAnswer(@RequestBody @Valid AnswerCreateDto createDto, UriComponentsBuilder uriBuilder) {
-        // Get the authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User author = (User) authentication.getPrincipal();
 
-        // Find the topic to which the answer belongs
         Topic topic = topicRepository.findById(createDto.getTopicId())
                 .orElseThrow(() -> new EntityNotFoundException("Topic not found with id: " + createDto.getTopicId()));
 
-        // Create and save the new answer
         Answer answer = new Answer(createDto.getMessage(), topic, author);
         answerRepository.save(answer);
 
@@ -72,15 +69,12 @@ public class AnswerController {
         Answer answer = answerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Answer not found with id: " + id));
 
-        // Authorization Check: Ensure the person updating is the original author
         User authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!answer.getAuthor().equals(authenticatedUser)) {
-            // In a real app, you'd throw an AccessDeniedException handled by your ErrorHandler
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         answer.setMessage(updateDto.getMessage());
-        // The transaction will commit the change to the database
 
         return ResponseEntity.ok(new AnswerResponseDto(answer));
     }
@@ -90,19 +84,12 @@ public class AnswerController {
     public ResponseEntity<Void> markAsSolution(@PathVariable Long id) {
         Answer answer = answerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Answer not found with id: " + id));
-
         Topic topic = answer.getTopic();
-
-        // Authorization Check: Ensure the person marking the solution is the author of the TOPIC
         User authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!topic.getAuthor().equals(authenticatedUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        // Mark this answer as the solution
         answer.setSolution(true);
-
-        // Optionally, close the topic since it's now solved
         topic.close();
 
         return ResponseEntity.noContent().build();

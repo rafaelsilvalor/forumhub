@@ -30,11 +30,10 @@ public class User implements UserDetails {
     private String email;
 
     @Column(unique = true, nullable = false)
-    private String username; // The unique username for login
+    private String username;
 
     private String password;
 
-    // Many-to-many relationship with profiles (roles)
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_profiles",
@@ -43,10 +42,8 @@ public class User implements UserDetails {
     )
     private Set<Profile> profiles;
 
-    // --- UserDetails interface methods ---
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Map the set of Profile objects to a collection of SimpleGrantedAuthority
         if (profiles == null) {
             return Set.of();
         }
