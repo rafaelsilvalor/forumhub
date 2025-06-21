@@ -98,7 +98,6 @@ class TopicControllerTest {
         verify(topicRepository, times(1)).save(any(Topic.class));
     }
 
-    // --- O restante dos métodos de teste continua igual ---
 
     @Test
     @DisplayName("Deve retornar 409 Conflict ao tentar criar um tópico com título duplicado")
