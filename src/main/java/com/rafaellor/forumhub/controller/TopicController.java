@@ -6,7 +6,7 @@ import com.rafaellor.forumhub.dto.TopicResponseDto;
 import com.rafaellor.forumhub.model.Course;
 import com.rafaellor.forumhub.model.Topic;
 import com.rafaellor.forumhub.model.User;
-import com.rafaellor.forumhub.repository.CursoRepository;
+import com.rafaellor.forumhub.repository.CourseRepository;
 import com.rafaellor.forumhub.repository.TopicRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -31,7 +31,7 @@ public class TopicController {
     private TopicRepository topicRepository;
 
     @Autowired
-    private CursoRepository cursoRepository; // Injetar o novo repositório
+    private CourseRepository courseRepository; // Injetar o novo repositório
 
     @PostMapping
     @Transactional
@@ -52,7 +52,7 @@ public class TopicController {
         }
 
         // Busca a entidade completa do Curso usando o ID fornecido no DTO
-        Course course = cursoRepository.findById(topicCreateDto.getCourseId())
+        Course course = courseRepository.findById(topicCreateDto.getCourseId())
                 .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + topicCreateDto.getCourseId()));
 
         // Cria o Tópico, passando o objeto User autenticado e o objeto Curso encontrado
@@ -100,7 +100,7 @@ public class TopicController {
                     }
 
                     // Busca o novo curso se um ID for fornecido
-                    Course course = cursoRepository.findById(topicUpdateDto.getCourseId())
+                    Course course = courseRepository.findById(topicUpdateDto.getCourseId())
                             .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + topicUpdateDto.getCourseId()));
 
                     // Atualiza o tópico com os novos dados
