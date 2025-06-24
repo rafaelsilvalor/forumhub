@@ -25,7 +25,7 @@ public class Topic {
     private Boolean status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false) // Change "user_id" to "author_id"
+    @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,7 +40,7 @@ public class Topic {
         this.title = title;
         this.message = message;
         this.creationDate = LocalDateTime.now();
-        this.status = true; // Default to active
+        this.status = true;
         this.author = author;
         this.course = course;
     }
