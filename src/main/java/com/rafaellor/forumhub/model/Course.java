@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "courses")
-@Data // This annotation is crucial
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course {

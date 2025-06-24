@@ -17,5 +17,5 @@ public class Profile {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String name; // e.g., "ROLE_USER", "ROLE_ADMIN"
+    private String name;
 }
