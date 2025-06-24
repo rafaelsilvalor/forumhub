@@ -3,9 +3,11 @@ package com.rafaellor.forumhub.controller;
 import com.rafaellor.forumhub.dto.AnswerResponseDto;
 import com.rafaellor.forumhub.dto.TopicCreateDto;
 import com.rafaellor.forumhub.dto.TopicResponseDto;
+import com.rafaellor.forumhub.model.Answer;
 import com.rafaellor.forumhub.model.Course;
 import com.rafaellor.forumhub.model.Topic;
 import com.rafaellor.forumhub.model.User;
+import com.rafaellor.forumhub.repository.AnswerRepository;
 import com.rafaellor.forumhub.repository.CourseRepository;
 import com.rafaellor.forumhub.repository.TopicRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,10 +20,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 
 import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/topics")
@@ -31,7 +35,10 @@ public class TopicController {
     private TopicRepository topicRepository;
 
     @Autowired
-    private CourseRepository courseRepository; // Injetar o novo repositório
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private AnswerRepository answerRepository;
 
     @PostMapping
     @Transactional
@@ -54,7 +61,7 @@ public class TopicController {
         Topic topic = new Topic(
                 topicCreateDto.getTitle(),
                 topicCreateDto.getMessage(),
-                authenticatedUser, course // Passa a entidade Curso completa
+                authenticatedUser, course
         );
         topic = topicRepository.save(topic);
 
@@ -64,11 +71,11 @@ public class TopicController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TopicResponseDto>> getAllTopics() {
-        List<TopicResponseDto> topics = topicRepository.findAll().stream()
-                .map(TopicResponseDto::new) // Converte cada Topic em um TopicResponseDto
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(topics);
+    public ResponseEntity<Page<TopicResponseDto>> getAllTopics(
+            @PageableDefault(size = 10, sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Topic> topicPage = topicRepository.findAll(pageable);
+        Page<TopicResponseDto> topicResponseDtoPage = topicPage.map(TopicResponseDto::new);
+        return ResponseEntity.ok(topicResponseDtoPage);
     }
 
     @GetMapping("/{id}")
@@ -106,22 +113,21 @@ public class TopicController {
     public ResponseEntity<Void> deleteTopic(@PathVariable Long id) {
         if (topicRepository.existsById(id)) {
             topicRepository.deleteById(id);
-            return ResponseEntity.noContent().build(); // Retorna 204 No Content
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.notFound().build(); // Retorna 404 Not Found
+        return ResponseEntity.notFound().build();
     }
     @GetMapping("/{topicId}/answers")
-    public ResponseEntity<List<AnswerResponseDto>> getAnswersForTopic(@PathVariable Long topicId) {
+    public ResponseEntity<Page<AnswerResponseDto>> getAnswersForTopic(@PathVariable Long topicId,
+                                                                      @PageableDefault(size = 20, sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageable) {
+
         if (!topicRepository.existsById(topicId)) {
             return ResponseEntity.notFound().build();
         }
 
-        Topic topic = topicRepository.findById(topicId).get(); // We already checked existence
+        Page<Answer> answerPage = answerRepository.findByTopicId(topicId, pageable);
 
-        List<AnswerResponseDto> answers = topic.getAnswers().stream()
-                .map(AnswerResponseDto::new)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(answers);
+        return ResponseEntity.ok(answerPage.map(AnswerResponseDto::new));
     }
+
 }
