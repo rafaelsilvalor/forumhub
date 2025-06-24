@@ -28,11 +28,11 @@ public class SecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        var tokenJWT = recoverToken(request); // Recover the JWT from the request header
+        var tokenJWT = recoverToken(request);
 
         if (tokenJWT != null) {
-            var subject = tokenService.getSubject(tokenJWT); // Get the username from the token
-            UserDetails user = userRepository.findByUsername(subject); // Load user details
+            var subject = tokenService.getSubject(tokenJWT);
+            UserDetails user = userRepository.findByUsername(subject);
 
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);

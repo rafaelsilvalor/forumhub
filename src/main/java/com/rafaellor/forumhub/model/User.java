@@ -23,7 +23,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Field for user's full name (for display)
+
     private String name;
 
     @Column(unique = true, nullable = false)

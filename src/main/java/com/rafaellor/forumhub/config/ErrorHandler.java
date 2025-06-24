@@ -50,12 +50,12 @@ public class ErrorHandler {
                 "Not Found",
                 ex.getMessage(),
                 ((ServletWebRequest)request).getRequest().getRequestURI(),
-                null // No specific validations for this error
+                null
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    // Handles malformed JSON in request body
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, WebRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(
@@ -83,7 +83,7 @@ public class ErrorHandler {
 
         ErrorResponseDto errorResponse = new ErrorResponseDto(
                 LocalDateTime.now(),
-                HttpStatus.CONFLICT.value(), // Use CONFLICT for data integrity issues like duplicates
+                HttpStatus.CONFLICT.value(),
                 "Conflict",
                 specificMessage,
                 ((ServletWebRequest)request).getRequest().getRequestURI(),
@@ -125,7 +125,7 @@ public class ErrorHandler {
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "An unexpected error occurred: " + ex.getMessage(), // For production, avoid exposing internal messages
+                "An unexpected error occurred: " + ex.getMessage(),
                 ((ServletWebRequest)request).getRequest().getRequestURI(),
                 null
         );
